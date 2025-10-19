@@ -1,7 +1,11 @@
 // src/config/swagger.js
 
+const path = require('path');
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const logger = require('./logger');
+
+const port = process.env.PORT || 3000;
 
 const options = {
   definition: {
@@ -13,7 +17,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3001',
+        url: `http://localhost:${port}`,
         description: 'Servidor de Desarrollo'
       }
     ],
@@ -57,14 +61,14 @@ const options = {
       }
     }
   },
-  apis: ['./src/routes/*.js'],
+  apis: [path.resolve(__dirname, '../routes/*.js')],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
 
 const setupSwagger = (app) => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log('📄 Documentación de la API disponible en http://localhost:3001/api-docs');
+  logger.info(`📄 Documentación de la API disponible en http://localhost:${port}/api-docs`);
 };
 
 module.exports = setupSwagger;

@@ -3,6 +3,7 @@
 const express = require('express');
 require('dotenv').config();
 const { pool, connectWithRetry } = require('./config/database');
+const logger = require('./config/logger');
 const playerRoutes = require('./routes/playerRoutes');
 const { notFound, errorHandler } = require('./utils/apiResponse');
 const setupSwagger = require('./config/swagger'); // Importamos nuestra configuración
@@ -23,9 +24,9 @@ async function initializeDatabase() {
       )
     `;
     await pool.query(createTableQuery);
-    console.log('👍 Tabla "players" verificada/creada con éxito.');
+    logger.info('👍 Tabla "players" verificada/creada con éxito.');
   } catch (error) {
-    console.error('❌ Error al inicializar la tabla "players":', error.message);
+    logger.error('❌ Error al inicializar la tabla "players": %s', error.message, { stack: error.stack });
     throw error;
   }
 }
@@ -39,6 +40,9 @@ app.get('/', (req, res) => {
 // --- Rutas de la API ---
 app.use('/api/players', playerRoutes);
 
+// --- Documentación de la API ---
+setupSwagger(app);
+
 // --- Manejadores de Errores (deben ir después de las rutas) ---
 app.use(notFound);
 app.use(errorHandler);
@@ -50,11 +54,10 @@ async function startServer() {
     await initializeDatabase();
 
     app.listen(port, () => {
-      console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
-      setupSwagger(app); // Configuramos Swagger después de que el servidor está escuchando
+      logger.info(`🚀 Servidor escuchando en http://localhost:${port}`);
     });
   } catch (error) {
-    console.error('Fatal error: Could not start server.', error.message);
+    logger.error('Fatal error: Could not start server. %s', error.message, { stack: error.stack });
     process.exit(1);
   }
 }

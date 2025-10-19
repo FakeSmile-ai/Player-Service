@@ -1,6 +1,7 @@
 // src/config/database.js
 
 const mysql = require('mysql2/promise');
+const logger = require('./logger');
 
 const dbConfig = {
   host: process.env.DB_HOST,
@@ -25,17 +26,19 @@ async function connectWithRetry(retries = 5) {
   for (let i = 0; i < retries; i++) {
     try {
       const connection = await pool.getConnection();
-      console.log('✅ ¡Conexión a la base de datos exitosa!');
+      logger.info('✅ ¡Conexión a la base de datos exitosa!');
       connection.release();
       return; // Si la conexión es exitosa, salimos de la función
     } catch (error) {
       lastError = error;
-      console.log(`❌ Intento de conexión ${i + 1}/${retries} fallido. Reintentando en 5 segundos...`);
+      logger.warn('❌ Intento de conexión %d/%d fallido. Reintentando en 5 segundos... %s', i + 1, retries, error.message, { stack: error.stack });
       await sleep(5000); // Esperamos 5 segundos antes de reintentar
     }
   }
   // Si todos los reintentos fallan, lanzamos el último error
-  throw new Error(`No se pudo conectar a la base de datos después de ${retries} intentos. Error: ${lastError.message}`);
+  const message = `No se pudo conectar a la base de datos después de ${retries} intentos. Error: ${lastError.message}`;
+  logger.error(message, { stack: lastError.stack });
+  throw new Error(message);
 }
 
 // Exportamos el pool y la función de conexión
