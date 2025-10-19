@@ -12,7 +12,7 @@ const { validateCreatePlayer, validateUpdatePlayer } = require('../middlewares/v
  *     summary: Retorna la lista de todos los jugadores
  *     tags: [Players]
  *     responses:
- *       '200':
+ *       200:
  *         description: La lista de jugadores
  *         content:
  *           application/json:
@@ -20,8 +20,25 @@ const { validateCreatePlayer, validateUpdatePlayer } = require('../middlewares/v
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Player'
+ *   post:
+ *     summary: Crea un nuevo jugador
+ *     tags: [Players]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Player'
+ *     responses:
+ *       201:
+ *         description: El jugador fue creado exitosamente
+ *       400:
+ *         description: Datos de entrada inválidos
  */
-router.get('/', playerController.getAllPlayers);
+router
+  .route('/')
+  .get(playerController.getAllPlayers)
+  .post(validateCreatePlayer, playerController.createPlayer);
 
 /**
  * @swagger
@@ -37,40 +54,14 @@ router.get('/', playerController.getAllPlayers);
  *         schema:
  *           type: integer
  *     responses:
- *       '200':
+ *       200:
  *         description: Los datos del jugador
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Player'
- *       '404':
+ *       404:
  *         description: El jugador no fue encontrado
- */
-router.get('/:id', playerController.getPlayerById);
-
-/**
- * @swagger
- * /api/players:
- *   post:
- *     summary: Crea un nuevo jugador
- *     tags: [Players]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Player'
- *     responses:
- *       '201':
- *         description: El jugador fue creado exitosamente
- *       '400':
- *         description: Datos de entrada inválidos
- */
-router.post('/', validateCreatePlayer, playerController.createPlayer);
-
-/**
- * @swagger
- * /api/players/{id}:
  *   put:
  *     summary: Actualiza un jugador existente
  *     tags: [Players]
@@ -88,18 +79,12 @@ router.post('/', validateCreatePlayer, playerController.createPlayer);
  *           schema:
  *             $ref: '#/components/schemas/Player'
  *     responses:
- *       '200':
+ *       200:
  *         description: Jugador actualizado
- *       '404':
+ *       404:
  *         description: El jugador no fue encontrado
- *       '400':
+ *       400:
  *         description: Datos de entrada inválidos
- */
-router.put('/:id', validateUpdatePlayer, playerController.updatePlayer);
-
-/**
- * @swagger
- * /api/players/{id}:
  *   delete:
  *     summary: Elimina un jugador por su ID
  *     tags: [Players]
@@ -111,11 +96,15 @@ router.put('/:id', validateUpdatePlayer, playerController.updatePlayer);
  *         schema:
  *           type: integer
  *     responses:
- *       '200':
+ *       200:
  *         description: Jugador eliminado
- *       '404':
+ *       404:
  *         description: El jugador no fue encontrado
  */
-router.delete('/:id', playerController.deletePlayer);
+router
+  .route('/:id')
+  .get(playerController.getPlayerById)
+  .put(validateUpdatePlayer, playerController.updatePlayer)
+  .delete(playerController.deletePlayer);
 
 module.exports = router;
