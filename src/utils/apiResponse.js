@@ -1,5 +1,7 @@
 // src/utils/apiResponse.js
 
+const logger = require('../config/logger');
+
 // Función para estandarizar respuestas exitosas
 const successResponse = (res, message, data, statusCode = 200) => {
   return res.status(statusCode).json({
@@ -30,7 +32,7 @@ const errorHandler = (err, req, res, next) => {
   // A veces un error puede venir con un status code, si no, es un error interno (500)
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
 
-  console.error(`[ERROR] ${statusCode} - ${err.message}\nStack: ${err.stack}`);
+  logger.error('[ERROR] %d - %s', statusCode, err.message, { stack: err.stack, path: req.originalUrl });
 
   errorResponse(
     res,
